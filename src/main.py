@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 import shutil
 import sqlite3
+import openai
 
 # Specify the full path including the .db file
 database_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents.db'
@@ -26,10 +27,18 @@ def create_database(db_path):
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
+    # Check if the 'summary' column exists
+    cursor.execute("PRAGMA table_info(documents)")
+    columns = [info[1] for info in cursor.fetchall()]
+    if 'summary' not in columns:
+        cursor.execute('''
+            ALTER TABLE documents
+            ADD COLUMN summary TEXT DEFAULT ''
+        ''')
+
     conn.commit()
     conn.close()
-
-create_database(database_path)
 
 class Watcher:
     def __init__(self, directory_to_watch):
@@ -106,6 +115,17 @@ def insert_document_data(db_path, category, file_path, ocr_text):
     conn.commit()
     conn.close()
 
+def get_gpt4_summary(text):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+
+    response = openai.Completion.create(
+      engine="gpt-4-1106-preview",  # or another GPT-4 model
+      prompt=f"Summarize this document:\n{text}",
+      max_tokens=150  # Adjust based on how long you want the summary to be
+    )
+
+    return response.choices[0].text.strip()
+
 # Update the perform_ocr function
 def perform_ocr(db_path, path):
     pages = convert_from_path(path, 500)
@@ -118,7 +138,8 @@ def perform_ocr(db_path, path):
     category = categorize_document(full_text)
     move_file_to_category(path, category)
     
-    insert_document_data(db_path, category, path, full_text)
+    summary = get_gpt4_summary(full_text)
+    insert_document_data(db_path, category, path, full_text, summary)
     print(f"Processed and moved '{path}' to '{category}' category")
 
 if __name__ == '__main__':
