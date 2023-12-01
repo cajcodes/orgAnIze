@@ -51,9 +51,33 @@
         p {
             color: #555;
         }
+        .search-form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .search-form input[type="text"] {
+            padding: 10px;
+            margin-right: 10px;
+            width: 300px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .search-form button {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #5cb85c;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <!-- Place this within the body tag, at the top -->
+    <form action="/search" method="get" class="search-form">
+        <input type="text" name="query" placeholder="Search documents..." required>
+        <button type="submit">Search</button>
+    </form>
     <div class="container">
         {% for filename, category, timestamp, summary in documents %}
             <div class="card" onclick="openFile('{{ category }}', '{{ filename }}')">
@@ -64,6 +88,15 @@
             </div>
         {% endfor %}
     </div>
+    <div class="container">
+        {% if documents %}
+            {% for filename, category, timestamp, summary in documents %}
+                <!-- Card HTML -->
+            {% endfor %}
+        {% else %}
+            <p>No documents found.</p>
+        {% endif %}
+    </div>    
 
     <script>
         function openFile(category, filename) {
