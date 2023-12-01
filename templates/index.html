@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document Organizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .card {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 20px;
+            border-radius: 8px;
+            min-width: 350px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+        .card h2 {
+            white-space: nowrap; /* Text won't wrap to a new line */
+            overflow: hidden; /* Ensures the text is clipped if it overflows the element's content area */
+            text-overflow: ellipsis; /* Render an ellipsis ('…') to represent clipped text */
+            max-width: 90%; /* Set a max-width to leave room for potential padding/margin */
+        }
+        .card p {
+            word-wrap: break-word; /* Allows long words to be able to break and wrap onto the next line */
+        }
+        .card h2, .card p {
+            font-size: 0.9em; /* Adjust the font size as needed */
+        }
+        /* Additional style for summary paragraphs to ensure they don't get too small */
+        .card p {
+            font-size: 0.8em; /* You can make this larger or smaller as necessary */
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        h2 {
+            margin-top: 0;
+        }
+        p {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% for filename, category, timestamp, summary in documents %}
+            <div class="card" onclick="openFile('{{ category }}', '{{ filename }}')">
+                <h2>{{ filename }}</h2>
+                <p><strong>Category:</strong> {{ category }}</p>
+                <p><strong>Timestamp:</strong> {{ timestamp }}</p>
+                <p><strong>Summary:</strong> {{ summary }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function openFile(category, filename) {
+            window.open('/open/' + category + '/' + filename);
+        }
+    </script>    
+</body>
+</html>
