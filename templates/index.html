@@ -70,38 +70,63 @@
             color: white;
             cursor: pointer;
         }
+        .search-form select {
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+        }
+        /* Style for option elements within the select dropdown */
+        .search-form select option {
+            padding: 10px;
+        }
+        /* Consistent styling for the button to match the form controls */
+        .search-form button {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #5cb85c;
+            color: white;
+            cursor: pointer;
+        }
+        /* Ensure the form controls align nicely */
+        .search-form input[type="text"], .search-form select, .search-form button {
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
-    <!-- Place this within the body tag, at the top -->
+    <!-- Search form at the top -->
     <form action="/search" method="get" class="search-form">
-        <input type="text" name="query" placeholder="Search documents..." required>
+        <input type="text" name="query" placeholder="Search documents...">
+        
+        <!-- Dropdown for category filter -->
+        <select name="category">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category[0] }}">{{ category[0] }}</option>
+            {% endfor %}
+        </select>
+    
         <button type="submit">Search</button>
     </form>
-    <div class="container">
-        {% for filename, category, timestamp, summary in documents %}
-            <div class="card" onclick="openFile('{{ category }}', '{{ filename }}')">
-                <h2>{{ filename }}</h2>
-                <p><strong>Category:</strong> {{ category }}</p>
-                <p><strong>Timestamp:</strong> {{ timestamp }}</p>
-                <p><strong>Summary:</strong> {{ summary }}</p>
-            </div>
-        {% endfor %}
-    </div>
+
+    <!-- Container for documents -->
     <div class="container">
         {% if documents %}
             {% for filename, category, timestamp, summary in documents %}
-                <!-- Card HTML -->
+                <div class="card" onclick="window.location.href='/open/{{ category }}/{{ filename }}'">
+                    <h2>{{ filename }}</h2>
+                    <p><strong>Category:</strong> {{ category }}</p>
+                    <p><strong>Timestamp:</strong> {{ timestamp }}</p>
+                    <p><strong>Summary:</strong> {{ summary }}</p>
+                </div>
             {% endfor %}
         {% else %}
             <p>No documents found.</p>
         {% endif %}
-    </div>    
-
-    <script>
-        function openFile(category, filename) {
-            window.open('/open/' + category + '/' + filename);
-        }
-    </script>    
+    </div>
 </body>
 </html>
