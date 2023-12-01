@@ -9,7 +9,9 @@ import cv2
 import numpy as np
 import shutil
 import sqlite3
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Specify the full path including the .db file
 database_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents.db'
@@ -103,28 +105,34 @@ def move_file_to_category(path, category):
 
     shutil.move(path, os.path.join(category_path, os.path.basename(path)))
 
-def insert_document_data(db_path, category, file_path, ocr_text):
+def insert_document_data(db_path, category, file_path, ocr_text, summary):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     cursor.execute('''
-        INSERT INTO documents (category, file_path, ocr_text)
-        VALUES (?, ?, ?)
-    ''', (category, file_path, ocr_text))
+        INSERT INTO documents (category, file_path, ocr_text, summary)
+        VALUES (?, ?, ?, ?)
+    ''', (category, file_path, ocr_text, summary))
 
     conn.commit()
     conn.close()
 
-def get_gpt4_summary(text):
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+def get_gpt4_summary(document_text):
+    client = OpenAI()
 
-    response = openai.Completion.create(
-      engine="gpt-4-1106-preview",  # or another GPT-4 model
-      prompt=f"Summarize this document:\n{text}",
-      max_tokens=150  # Adjust based on how long you want the summary to be
+    completion = client.chat.completions.create(
+        model="gpt-4-1106-preview",  # Adjust the model as necessary
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"Summarize this document:\n{document_text}"}
+        ]
     )
 
-    return response.choices[0].text.strip()
+    # Accessing the message content correctly
+    if completion.choices and completion.choices[0].message:
+        return completion.choices[0].message.content
+    else:
+        return "No summary available."
 
 # Update the perform_ocr function
 def perform_ocr(db_path, path):
