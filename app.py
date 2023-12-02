@@ -6,14 +6,16 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents2.db'
+    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents3.db'
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT DISTINCT category FROM documents")
-    categories = cursor.fetchall()  # This will be a list of tuples
+    # Fetch categories for the dropdown
+    cursor.execute("SELECT id, name FROM categories")
+    categories = cursor.fetchall()
 
-    cursor.execute("SELECT filename, category, timestamp, summary FROM documents")
+    # Join documents with categories to get category names
+    cursor.execute("SELECT filename, categories.name, timestamp, summary FROM documents INNER JOIN categories ON documents.category_id = categories.id")
     documents = cursor.fetchall()
 
     conn.close()
@@ -31,27 +33,27 @@ def open_file(category, filename):
 
 @app.route('/search')
 def search():
-    query = request.args.get('query', '')  # Default to an empty string if no query is provided
-    selected_category = request.args.get('category', '')  # Default to no category if none is selected
+    query = request.args.get('query', '')
+    selected_category_id = request.args.get('category', '')
 
-    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents2.db'
+    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents3.db'
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # Fetch categories for the dropdown
-    cursor.execute("SELECT DISTINCT category FROM documents")
+    cursor.execute("SELECT id, name FROM categories")
     categories = cursor.fetchall()
 
-    # Construct the SQL query based on the presence of a query and/or category
-    sql_query = "SELECT filename, category, timestamp, summary FROM documents"
+    # Construct the SQL query with JOIN
+    sql_query = "SELECT filename, categories.name, timestamp, summary FROM documents INNER JOIN categories ON documents.category_id = categories.id"
     sql_params = []
 
-    if selected_category and query:
-        sql_query += " WHERE category = ? AND ocr_text LIKE ?"
-        sql_params.extend([selected_category, f'%{query}%'])
-    elif selected_category:
-        sql_query += " WHERE category = ?"
-        sql_params.append(selected_category)
+    if selected_category_id and query:
+        sql_query += " WHERE categories.id = ? AND ocr_text LIKE ?"
+        sql_params.extend([selected_category_id, f'%{query}%'])
+    elif selected_category_id:
+        sql_query += " WHERE categories.id = ?"
+        sql_params.append(selected_category_id)
     elif query:
         sql_query += " WHERE ocr_text LIKE ?"
         sql_params.append(f'%{query}%')

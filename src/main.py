@@ -10,26 +10,36 @@ import numpy as np
 import shutil
 import sqlite3
 from openai import OpenAI
+import json
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Specify the full path including the .db file for the new database
-database_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents2.db'
+database_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents3.db'
 
 def create_database(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Create a new table with all necessary columns
+    # Create a table for categories
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS categories (
+            id INTEGER PRIMARY KEY,
+            name TEXT UNIQUE
+        )
+    ''')
+
+    # Create a table for documents with a reference to categories
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS documents (
             id INTEGER PRIMARY KEY,
-            category TEXT,
+            category_id INTEGER,
             file_path TEXT,
             ocr_text TEXT,
             summary TEXT DEFAULT '',
             filename TEXT DEFAULT '',
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (category_id) REFERENCES categories (id)
         )
     ''')
     conn.commit()
@@ -103,14 +113,14 @@ def move_file_to_category(path, category):
     shutil.move(path, new_path)
     return new_path  # Return the new file path
 
-def insert_document_data(db_path, category, file_path, ocr_text, summary, filename):
+def insert_document_data(db_path, category_id, file_path, ocr_text, summary, filename):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     cursor.execute('''
-        INSERT INTO documents (category, file_path, ocr_text, summary, filename)
+        INSERT INTO documents (category_id, file_path, ocr_text, summary, filename)
         VALUES (?, ?, ?, ?, ?)
-    ''', (category, file_path, ocr_text, summary, filename))
+    ''', (category_id, file_path, ocr_text, summary, filename))
 
     conn.commit()
     conn.close()
@@ -154,6 +164,23 @@ def rename_file(original_path, new_name):
     os.rename(original_path, new_path)
     return new_path
 
+def get_gpt4_category_suggestion(document_text):
+    client = OpenAI()
+
+    response = client.chat.completions.create(
+        model="gpt-4-1106-preview",
+        messages = [
+            {"role": "system", "content": "You are a precise, well-organized assistant. Your task is to suggest categories for organizing documents into folders. Each category should be broad enough to be reusable for similar future documents and intuitive enough to indicate the folder's contents. Examples of good categories: invoices, work orders, receipts, reports, promotional materials."},
+            {"role": "user", "content": f"Based on the following document text, suggest a category. The category should be a maximum of 3 words and should not include any explanations:\n\n{document_text}"}
+        ]
+
+    )
+
+    if response.choices and response.choices[0].message:
+        return response.choices[0].message.content.strip()
+    else:
+        return "Uncategorized"
+    
 # Update the perform_ocr function
 def perform_ocr(db_path, path):
     pages = convert_from_path(path, 500)
@@ -163,16 +190,33 @@ def perform_ocr(db_path, path):
         for result in results:
             full_text += result + "\n"
 
-    category = categorize_document(full_text)
-    new_file_path = move_file_to_category(path, category)
-    
+    print(f"Full text: {full_text}")
+    # Get category suggestion from GPT-4
+    category_name = get_gpt4_category_suggestion(full_text)
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Check if the category exists, and if not, insert it
+    cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,))
+    category = cursor.fetchone()
+    if not category:
+        cursor.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
+        conn.commit()  # Commit after inserting new category
+        category_id = cursor.lastrowid
+    else:
+        category_id = category[0]
+
     summary = get_gpt4_summary(full_text)
     filename_suggestion = get_gpt4_filename_suggestion(summary)
+    new_file_path = move_file_to_category(path, category_name)  # Use category_name instead of category
     final_file_path = rename_file(new_file_path, filename_suggestion)
 
-    # Update database insertion to include the filename
-    insert_document_data(db_path, category, path, full_text, summary, filename_suggestion)
-    print(f"Processed and moved '{path}' to '{category}' category")
+    # Insert document data with category_id
+    insert_document_data(db_path, category_id, final_file_path, full_text, summary, filename_suggestion)
+    print(f"Processed and moved '{path}' to '{category_name}' category")
+    
+    conn.close()
 
 if __name__ == '__main__':
     w = Watcher('/Users/christopher/Documents/CAJ DocumentAI/chaos')  # Set the directory you want to watch
