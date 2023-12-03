@@ -49,7 +49,7 @@ def create_database(db_path):
 create_database(database_path)
 
 # At the top of your main.py or a similar file
-HARDCODED_CATEGORIES = ["Invoices", "Reports", "Letters", "Work Orders", "Receipts", "Contracts", "Tickets", "Marketing"]
+HARDCODED_CATEGORIES = ["Invoices", "Reports", "Letters", "Work Orders", "Receipts", "Contracts", "Manuals", "Marketing"]
 
 def check_hardcoded_categories(document_text):
     category_keywords = {
@@ -59,7 +59,7 @@ def check_hardcoded_categories(document_text):
         "Work Orders": ["work order", "job order", "service order", "maintenance request", "order number"],
         "Receipts": ["receipt", "proof of purchase", "transaction", "total amount", "sales receipt"],
         "Contracts": ["contract", "agreement", "binding", "terms and conditions", "contractual"],
-        "Tickets": ["technical support", "ticket", "Current State", "OTRS", "NOCIncoming"],
+        "Manuals": ["manual", "instruction", "guide", "handbook", "how to"],
         "Marketing": ["marketing", "promotion", "advertise", "campaign", "branding"]
     }
 

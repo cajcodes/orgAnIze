@@ -1,12 +1,13 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, jsonify
 import sqlite3
 import os
+from openai import OpenAI
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents3.db'
+    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/docs.db'
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -31,12 +32,64 @@ def open_file(category, filename):
     except FileNotFoundError:
         return "File not found", 404
 
+@app.route('/process_query', methods=['POST'])
+def process_query():
+    data = request.json
+    query = data['query']
+    response = handle_gpt4_query(query)
+    return jsonify({'response': response})
+
+def query_database_for_docs_or_categories(query):
+    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/docs.db'  # Update with the correct path
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Query for matching documents
+    cursor.execute("SELECT id, filename, file_path, summary FROM documents WHERE ocr_text LIKE ? OR summary LIKE ?", ('%'+query+'%', '%'+query+'%'))
+    document_results = cursor.fetchall()
+
+    # Query for matching categories
+    cursor.execute("SELECT id, name FROM categories WHERE name LIKE ?", ('%'+query+'%',))
+    category_results = cursor.fetchall()
+
+    conn.close()
+    return document_results, category_results
+
+def handle_gpt4_query(query):
+    document_results, _ = query_database_for_docs_or_categories(query)
+    formatted_doc_results = format_for_gpt4(document_results)
+
+    # GPT-4 interaction
+    client = OpenAI()
+
+    completion = client.chat.completions.create(
+        model="gpt-4-1106-preview",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant. Use the provided document details to answer queries."},
+            {"role": "user", "content": f"Query: {query}. Based on these documents: {formatted_doc_results}, what information can you provide?"}
+        ]
+    )
+
+    if completion.choices and completion.choices[0].message:
+        return completion.choices[0].message.content
+    else:
+        return "No results found."
+
+def format_for_gpt4(document_results):
+    # Simple format: filename, filepath, and summary
+    formatted_results = []
+    for _, filename, filepath, summary in document_results:
+        formatted_result = f"Filename: {filename}, Filepath: {filepath}, Summary: {summary}"
+        formatted_results.append(formatted_result)
+
+    return ' | '.join(formatted_results) if formatted_results else "No relevant documents found."
+
 @app.route('/search')
 def search():
     query = request.args.get('query', '')
     selected_category_id = request.args.get('category', '')
 
-    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/documents3.db'
+    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/docs.db'
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
