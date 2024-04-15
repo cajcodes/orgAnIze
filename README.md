@@ -1,4 +1,4 @@
-![orgAnIze logo](/static/orgAnIze-logo.svg)
+![orgAnIze logo](/static/orgAnIze-logo-small.svg)
 
 # Document Management and Organization Web Application
 
