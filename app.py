@@ -40,7 +40,7 @@ def process_query():
     return jsonify({'response': response})
 
 def query_database_for_docs_or_categories(query):
-    db_path = '/data/docs.db'  # Update with the correct path
+    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/docs.db'  # Update with the correct path
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 

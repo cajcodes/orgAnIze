@@ -15,7 +15,7 @@ import json
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Specify the full path including the .db file for the new database
-database_path = 'data/docs.db'
+database_path = '/data/docs.db'
 
 def create_database(db_path):
     conn = sqlite3.connect(db_path)
@@ -125,7 +125,7 @@ def categorize_document(text):
         return "Uncategorized"
 
 def move_file_to_category(path, category):
-    organized_dir = 'documents/order'
+    organized_dir = '/documents/order'
     category_path = os.path.join(organized_dir, category)
 
     if not os.path.exists(category_path):
@@ -246,5 +246,5 @@ def perform_ocr(db_path, path):
     conn.close()
 
 if __name__ == '__main__':
-    w = Watcher('documents/chaos')  # Set the directory you want to watch
+    w = Watcher('/documents/chaos')  # Set the directory you want to watch
     w.run()
