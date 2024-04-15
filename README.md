@@ -1,3 +1,5 @@
+![orgAnIze logo](/static/orgAnIze-logo.svg)
+
 # Document Management and Organization Web Application
 
 This project is a document management and organization web application designed to process, categorize, and summarize a variety of documents such as invoices, work orders, and tickets. It is developed in Python, utilizing the Flask web framework for the backend and HTML/CSS for a simple and modern front-end interface.
@@ -22,7 +24,7 @@ This project utilizes creative prompting techniques to elicit highly accurate re
 
 ## Local LLMs Support
 
-This project works with local Language Learning Models (LLMs) easily using LM Studio. This allows the use of custom models for processing and categorizing documents, providing greater security, flexibility, and control over the application's behavior. Out of the models I've tested, Hermes-2-Pro-Mistral-7B.Q8_0.gguf and mixtral-8x7b-instruct-v0.1.Q2_K.gguf have worked best. They improve dramatically when you make the prompts much more repetitive. 
+This project works with local Language Learning Models (LLMs) easily using [LM Studio](https://lmstudio.ai). This allows the use of custom models for processing and categorizing documents, providing greater security, flexibility, and control over the application's behavior. Out of the models I've tested, Hermes-2-Pro-Mistral-7B.Q8_0.gguf and mixtral-8x7b-instruct-v0.1.Q2_K.gguf have worked best. They improve dramatically when you make the prompts much more repetitive. 
 
 # Getting Started
 
@@ -30,7 +32,7 @@ To try out this project, follow these steps:
 
 * Clone the repository to your local machine.
 * Install the required dependencies using pip.
-* Set up .env with GPT-4 API key or adjust [main-search.py](/src/main-search.py) to point to LM Studio.
+* Set up .env with GPT-4 API key or adjust [main-search.py](/src/main-search.py) to point to [LM Studio](https://lmstudio.ai).
 * To start the backend, open a terminal window and navigate to the project directory. Run the command `python main-search.py` to start the backend process. This will automatically monitor the /documents/chaos directory for new PDF documents using the watchdog library. When a new document is added to this folder, the backend will perform OCR on the document, extract text, and categorize and summarize the document using GPT-4. The document details will be stored in an SQLite database, and the processed document will be moved to an organized folder based on its category in /documents/order.
 * To start the frontend, navigate to the project directory and run the command `flask run` in the terminal. This will start the Flask development server and make the web application accessible at <http://localhost:5000> by default.
 * View and search the processed documents in the web interface.
