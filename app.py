@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/docs.db'
+    db_path = '/data/docs.db'
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -25,7 +25,7 @@ def index():
 
 @app.route('/open/<category>/<filename>')
 def open_file(category, filename):
-    file_path = f'/Users/christopher/Documents/CAJ DocumentAI/order/{category}/{filename}'
+    file_path = f'/documents/order/{category}/{filename}'
     try:
         # Try to send the file for inline viewing if the browser supports it
         return send_file(file_path, as_attachment=False)
@@ -40,7 +40,7 @@ def process_query():
     return jsonify({'response': response})
 
 def query_database_for_docs_or_categories(query):
-    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/docs.db'  # Update with the correct path
+    db_path = '/data/docs.db'  # Update with the correct path
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -89,7 +89,7 @@ def search():
     query = request.args.get('query', '')
     selected_category_id = request.args.get('category', '')
 
-    db_path = '/Users/christopher/Documents/CAJ DocumentAI/data/docs.db'
+    db_path = '/data/docs.db'
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
