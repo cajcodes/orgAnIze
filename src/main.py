@@ -151,9 +151,9 @@ def get_gpt4_summary(document_text):
     client = OpenAI()
 
     completion = client.chat.completions.create(
-        model="gpt-4-1106-preview",  # Adjust the model as necessary
+        model="gpt-3.5-turbo",  # Adjust the model as necessary
         messages=[
-            {"role": "system", "content": "You are a precise assistant."},
+            {"role": "system", "content": "You are a professional summarizer, creating a concise and comprehensive summary of the provided text while adhering to these guidelines: 1. Craft a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness. 2. Incorporate main ideas and essential information, eliminating extraneous language and focusing on critical aspects. 3. Rely strictly on the provided text, without including external information. 4. Format the summary in paragraph form for easy understanding."},
             {"role": "user", "content": f"Summarize this document:\n{document_text}"}
         ]
     )
@@ -168,10 +168,10 @@ def get_gpt4_filename_suggestion(document_summary):
     client = OpenAI()
 
     completion = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a precise and logical assistant skilled in summarizing and organizing information. Your task is to create concise yet descriptive filenames."},
-            {"role": "user", "content": f"Given this summary, suggest a filename that is clear, concise, and no longer than 9 words: {document_summary}"}
+            {"role": "user", "content": f"Given this summary, suggest a filename that is clear, concise, and no longer than 9 words. Do not include any explanations.: {document_summary}"}
         ]
     )
 
@@ -190,7 +190,7 @@ def get_gpt4_category_suggestion(document_text):
     client = OpenAI()
 
     response = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="gpt-3.5-turbo",
         messages = [
             {"role": "system", "content": "You are a precise, well-organized assistant. Your task is to suggest categories for organizing documents into folders. Each category should be broad enough to be reusable for similar future documents and intuitive enough to indicate the folder's contents. Examples of good categories: invoices, work orders, receipts, reports, promotional materials."},
             {"role": "user", "content": f"Based on the following document text, suggest a category. The category should be a maximum of 3 words and should not include any explanations:\n\n{document_text}"}
