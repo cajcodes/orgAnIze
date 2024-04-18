@@ -4,6 +4,8 @@
 
 This project is a document management and organization web application designed to process, categorize, and summarize a variety of documents such as invoices, work orders, and tickets. It is developed in Python, utilizing the Flask web framework for the backend and HTML/CSS for a simple and modern front-end interface.
 
+![Redacted screenshot of dashboard](/static/orgAnIze-dashboard-screenshot-redacted.png)
+
 ## Key Features
 
 * Monitors a specific directory for new PDF documents using the watchdog library.
